@@ -1,5 +1,6 @@
 package br.com.procempa.bdrelationship.core.controllers;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,45 +29,57 @@ public class BibliotecaController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // post method to add a new library
-    @PostMapping("/{usuario_id}")
-    public ResponseEntity<BibliotecaModel> postBiblioteca(@RequestBody BibliotecaModel biblioteca, @RequestBody UsuarioModel usuario) {
-        try{
-            
-            BibliotecaModel bibliotecaSalva = bibliotecaRepository.save(biblioteca);
-            
+@PostMapping("/{usuarioId}")
+    public ResponseEntity<BibliotecaModel> postBiblioteca(@PathVariable String usuarioId, @RequestBody BibliotecaModel biblioteca) {
+        try {
+            Optional<UsuarioModel> usuarioOptional = usuarioRepository.findById(usuarioId);
+            if (!usuarioOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            UsuarioModel usuario = usuarioOptional.get();
 
-            return ResponseEntity.ok(biblioteca);
+            // Inicializa a lista de usuários se estiver nula
+            if (biblioteca.getUsuarios() == null) {
+                biblioteca.setUsuarios(new ArrayList<>());
+            }
+
+            // Adiciona a biblioteca ao usuário e vice-versa
+            biblioteca.getUsuarios().add(usuario);
+            if (usuario.getBibliotecas() == null) {
+                usuario.setBibliotecas(new ArrayList<>());
+            }
+            usuario.getBibliotecas().add(biblioteca);
+
+            // Salva a biblioteca (cascading deve cuidar de salvar o relacionamento)
+            //usuarioRepository.save(usuario);
+            BibliotecaModel bibliotecaSalva = bibliotecaRepository.save(biblioteca);
+            return ResponseEntity.ok(bibliotecaSalva);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(biblioteca);
+            e.printStackTrace(); // Adiciona o stack trace para ajudar na depuração
+            return ResponseEntity.badRequest().build();
         }
     }
 
-    //get all libraries
+    // get all libraries
     @GetMapping("")
     public ResponseEntity<Iterable<BibliotecaModel>> getBibliotecas() {
         Iterable<BibliotecaModel> bibliotecas = bibliotecaRepository.findAll();
-        if(bibliotecas.iterator().hasNext()){
+        if (bibliotecas.iterator().hasNext()) {
             return ResponseEntity.ok(bibliotecas);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
-    //get library by id
+    // get library by id
     @GetMapping("{id}")
     public ResponseEntity<BibliotecaModel> getBibliotecaById(@PathVariable String id) {
         Optional<BibliotecaModel> biblioteca = bibliotecaRepository.findById(id);
-        if(biblioteca.isPresent()){
+        if (biblioteca.isPresent()) {
             return ResponseEntity.ok(biblioteca.get());
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
-
-
-
-    
-    
 }
