@@ -61,7 +61,7 @@ public class UsuarioController {
     }
 
     // delete user by id
-    @DeleteMapping("delete/{id}")
+    @DeleteMapping("{id}")
     public ResponseEntity<String> deleteUsuarioById(@PathVariable String id) {
         try {
             usuarioRepository.deleteById(id);
@@ -72,7 +72,7 @@ public class UsuarioController {
     }
 
     // put method to update user
-    @PutMapping("update/{id}")
+    @PutMapping("{id}")
     public ResponseEntity<String> putUsuarioById(@PathVariable String id, @RequestBody UsuarioModel entity) {
         Optional<UsuarioModel> usuario = usuarioRepository.findById(id);
         if (usuario.isEmpty()) {
