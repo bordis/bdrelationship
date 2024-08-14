@@ -19,6 +19,8 @@ import br.com.procempa.bdrelationship.core.models.BibliotecaModel;
 import br.com.procempa.bdrelationship.core.models.UsuarioModel;
 import br.com.procempa.bdrelationship.core.repositories.BibliotecaRepository;
 import br.com.procempa.bdrelationship.core.repositories.UsuarioRepository;
+import br.com.procempa.bdrelationship.core.services.BibliotecaService;
+import br.com.procempa.bdrelationship.core.services.UsuarioService;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -26,17 +28,17 @@ import br.com.procempa.bdrelationship.core.repositories.UsuarioRepository;
 public class BibliotecaController {
 
     @Autowired
-    private BibliotecaRepository bibliotecaRepository;
+    private BibliotecaService bibliotecaService;
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioService usuarioService;
 
     // generate crud get, getall, add, update, delete,
 
     // get all libraries
     @GetMapping("")
     public ResponseEntity<Iterable<BibliotecaModel>> getBibliotecas() {
-        Iterable<BibliotecaModel> bibliotecas = bibliotecaRepository.findAll();
+        Iterable<BibliotecaModel> bibliotecas = bibliotecaService.getAll();
         if (bibliotecas.iterator().hasNext()) {
             return ResponseEntity.ok(bibliotecas);
         } else {
@@ -47,9 +49,9 @@ public class BibliotecaController {
     // get library by id
     @GetMapping("{id}")
     public ResponseEntity<BibliotecaModel> getBibliotecaById(@PathVariable String id) {
-        Optional<BibliotecaModel> biblioteca = bibliotecaRepository.findById(id);
-        if (biblioteca.isPresent()) {
-            return ResponseEntity.ok(biblioteca.get());
+        BibliotecaModel biblioteca = bibliotecaService.getBibliotecaById(id);
+        if (biblioteca != null) {
+            return ResponseEntity.ok(biblioteca);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -57,12 +59,11 @@ public class BibliotecaController {
 
     // post method to add a new library, only admins can add libraries withou users
     @PostMapping("")
-    public ResponseEntity<BibliotecaModel> postBiblioteca(@RequestBody BibliotecaModel entity) {
+    public ResponseEntity<BibliotecaModel> postBiblioteca(@RequestBody BibliotecaModel biblioteca) {
         try {
-            entity = bibliotecaRepository.save(entity);
-            return ResponseEntity.ok(entity);
+            return ResponseEntity.ok(bibliotecaService.postBiblioteca(biblioteca));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(entity);
+            return ResponseEntity.badRequest().body(biblioteca);
         }
     }
 
@@ -72,28 +73,8 @@ public class BibliotecaController {
             @RequestBody BibliotecaModel biblioteca) {
         try {
 
-            Optional<UsuarioModel> usuarioOptional = usuarioRepository.findById(usuarioId);
-            if (!usuarioOptional.isPresent()) {
-                return ResponseEntity.notFound().build();
-            }
-            UsuarioModel usuario = usuarioOptional.get();
 
-            // Inicializa a lista de usuários se estiver nula
-            if (biblioteca.getUsuarios() == null) {
-                biblioteca.setUsuarios(new ArrayList<>());
-            }
-
-            // Adiciona a biblioteca ao usuário e vice-versa
-            biblioteca.getUsuarios().add(usuario);
-            if (usuario.getBibliotecas() == null) {
-                usuario.setBibliotecas(new ArrayList<>());
-            }
-            usuario.getBibliotecas().add(biblioteca);
-
-            // Salva a biblioteca (cascading deve cuidar de salvar o relacionamento)
-            BibliotecaModel bibliotecaSalva = bibliotecaRepository.save(biblioteca);
-
-            return ResponseEntity.ok(bibliotecaSalva);
+            return bibliotecaService.addUserToLibrary(biblioteca, usuarioId);
         } catch (Exception e) {
             e.printStackTrace(); // Adiciona o stack trace para ajudar na depuração
             return ResponseEntity.badRequest().build();
@@ -102,10 +83,10 @@ public class BibliotecaController {
 
     // put method to update library
     @PutMapping("{id}")
-    public ResponseEntity<String> putBibliotecaById(@PathVariable String id, @RequestBody BibliotecaModel entity) {
-        Optional<BibliotecaModel> biblioteca = bibliotecaRepository.findById(id);
-        if (biblioteca.isPresent()) {
-            bibliotecaRepository.save(entity);
+    public ResponseEntity<String> putBibliotecaById(@PathVariable String id, @RequestBody BibliotecaModel biblioteca) {
+        BibliotecaModel oldBiblioteca = bibliotecaService.getBibliotecaById(id);
+        if (oldBiblioteca != null) {
+            bibliotecaService.postBiblioteca(biblioteca);
             return ResponseEntity.ok("Biblioteca atualizada com sucesso");
         } else {
             return ResponseEntity.notFound().build();
@@ -116,7 +97,7 @@ public class BibliotecaController {
     @DeleteMapping("{id}")
     public ResponseEntity<String> deleteBibliotecaById(@PathVariable String id) {
         try {
-            bibliotecaRepository.deleteById(id);
+            bibliotecaService.deleteBiblioteca(id);
             return ResponseEntity.ok("Biblioteca deletada com sucesso");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao deletar biblioteca");

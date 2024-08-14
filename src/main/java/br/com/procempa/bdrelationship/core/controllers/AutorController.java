@@ -1,7 +1,5 @@
 package br.com.procempa.bdrelationship.core.controllers;
 
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.procempa.bdrelationship.core.models.AutorModel;
-import br.com.procempa.bdrelationship.core.repositories.AutorRepository;
+import br.com.procempa.bdrelationship.core.services.AutorService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,13 +23,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class AutorController {
 
     @Autowired
-    private AutorRepository autorRepository;
+    private AutorService autorService;
 
     // generate crud get, getall, add, update, delete, 
 
     @GetMapping("")
     public ResponseEntity<Iterable<AutorModel>> getAll() {
-        Iterable<AutorModel> autores = autorRepository.findAll();
+        Iterable<AutorModel> autores = autorService.getAll();
         if (autores.iterator().hasNext()) {
             return ResponseEntity.ok(autores);
         } else {
@@ -41,9 +39,9 @@ public class AutorController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AutorModel> getAutorById(@PathVariable String id) {
-        Optional<AutorModel> autor = autorRepository.findById(id);
-        if (autor.isPresent()) {
-            return ResponseEntity.ok(autor.get());
+        AutorModel autor = autorService.getAutorById(id);
+        if (autor != null) {
+            return ResponseEntity.ok(autor);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -51,10 +49,10 @@ public class AutorController {
     
 
     @PostMapping("")
-    public ResponseEntity<AutorModel> postAutor(@RequestBody AutorModel entity) {
+    public ResponseEntity<AutorModel> postAutor(@RequestBody AutorModel autor) {
         try {
             // save entity
-            return ResponseEntity.ok(entity);
+            return ResponseEntity.ok(autorService.postAutor(autor));
         } catch (Exception e) {
             e.printStackTrace(); // Adiciona o stack trace para ajudar na depuração
             return ResponseEntity.badRequest().build();
@@ -62,12 +60,11 @@ public class AutorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AutorModel> putAutor(@PathVariable String id, @RequestBody AutorModel entity) {
+    public ResponseEntity<AutorModel> putAutor(@PathVariable String id, @RequestBody AutorModel autor) {
         try {
-            Optional<AutorModel> autor = autorRepository.findById(id);
-            if (autor.isPresent()) {
-                entity = autorRepository.save(entity);
-                return ResponseEntity.ok(entity);
+            AutorModel oldAutor = autorService.getAutorById(id);
+            if (oldAutor != null) {
+                return ResponseEntity.ok(autorService.putAutor(autor));
             } else {
                 return ResponseEntity.notFound().build();
             }
@@ -80,7 +77,7 @@ public class AutorController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAutor(@PathVariable String id) {
         try {
-            autorRepository.deleteById(id);
+            autorService.deleteAutor(id);
             return ResponseEntity.ok("Autor deletado com sucesso");
         } catch (Exception e) {
             e.printStackTrace(); // Adiciona o stack trace para ajudar na depuração
