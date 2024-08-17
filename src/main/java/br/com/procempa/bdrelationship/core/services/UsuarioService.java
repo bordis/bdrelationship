@@ -19,7 +19,7 @@ public class UsuarioService {
     }
 
     public UsuarioModel getUsuarioById(String id) {
-        return usuarioRepository.findById(id).get();
+        return usuarioRepository.findById(id).orElse(null);
     }
 
     public UsuarioModel postUsuario(UsuarioModel entity) {

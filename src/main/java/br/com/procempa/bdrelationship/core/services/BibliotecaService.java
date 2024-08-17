@@ -25,7 +25,7 @@ public class BibliotecaService {
     }
 
     public BibliotecaModel getBibliotecaById(String id) {
-        return bibliotecaRepository.findById(id).get();
+        return bibliotecaRepository.findById(id).orElse(null);
     }
 
     public BibliotecaModel postBiblioteca(BibliotecaModel entity) {

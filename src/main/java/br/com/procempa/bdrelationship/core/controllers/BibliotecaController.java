@@ -1,8 +1,5 @@
 package br.com.procempa.bdrelationship.core.controllers;
 
-import java.util.ArrayList;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,11 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.procempa.bdrelationship.core.models.BibliotecaModel;
-import br.com.procempa.bdrelationship.core.models.UsuarioModel;
-import br.com.procempa.bdrelationship.core.repositories.BibliotecaRepository;
-import br.com.procempa.bdrelationship.core.repositories.UsuarioRepository;
 import br.com.procempa.bdrelationship.core.services.BibliotecaService;
-import br.com.procempa.bdrelationship.core.services.UsuarioService;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -29,9 +22,6 @@ public class BibliotecaController {
 
     @Autowired
     private BibliotecaService bibliotecaService;
-
-    @Autowired
-    private UsuarioService usuarioService;
 
     // generate crud get, getall, add, update, delete,
 
@@ -72,8 +62,6 @@ public class BibliotecaController {
     public ResponseEntity<BibliotecaModel> postBiblioteca(@PathVariable String usuarioId,
             @RequestBody BibliotecaModel biblioteca) {
         try {
-
-
             return bibliotecaService.addUserToLibrary(biblioteca, usuarioId);
         } catch (Exception e) {
             e.printStackTrace(); // Adiciona o stack trace para ajudar na depuração

@@ -2,7 +2,6 @@ package br.com.procempa.bdrelationship.core.models;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
@@ -40,5 +39,10 @@ public class BibliotecaModel {
     @JoinTable(name = "biblioteca_usuario", joinColumns = @JoinColumn(name = "biblioteca_id"), inverseJoinColumns = @JoinColumn(name = "usuario_id"))
     @JsonIgnoreProperties("bibliotecas")
     private List<UsuarioModel> usuarios;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "biblioteca_livro", joinColumns = @JoinColumn(name = "biblioteca_id"), inverseJoinColumns = @JoinColumn(name = "livro_id"))
+    @JsonIgnoreProperties("bibliotecas")
+    private List<LivroModel> livros;
 
 }

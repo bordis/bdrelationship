@@ -18,7 +18,7 @@ public class AutorService {
     }
 
     public AutorModel getAutorById(String id) {
-        return autorRepository.findById(id).get();
+        return autorRepository.findById(id).orElse(null);
     }
 
     public AutorModel postAutor(AutorModel entity) {
